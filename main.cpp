@@ -7,6 +7,8 @@ using std::string;
 
 
 int main(int argc, char *argv[]){
+    // 啟動時不開啟cmd視窗
+    ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false);
     // 獲取執行檔path
     char exePath[MAX_PATH];
     GetModuleFileName(NULL, exePath, MAX_PATH);
