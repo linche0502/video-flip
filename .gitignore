@@ -1,0 +1,4 @@
+.vscode/
+__pycache__/
+python-3.10.10-embed/
+video-flip/static/ffmpeg/*.exe
