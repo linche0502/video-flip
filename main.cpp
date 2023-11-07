@@ -12,9 +12,11 @@ int main(int argc, char *argv[]){
     // 獲取執行檔path
     char exePath[MAX_PATH];
     GetModuleFileName(NULL, exePath, MAX_PATH);
+    // 將執行檔path轉成string
     string exePathS = exePath;
+    // 將執行檔path後面的檔案名稱sub掉，留下資料夾路徑就好
     exePathS = exePathS.substr(0, exePathS.find_last_of("\\/"));
-    // 先cd到此目錄
+    // cd到此目錄
     SetCurrentDirectory(exePathS.c_str());
     
     
