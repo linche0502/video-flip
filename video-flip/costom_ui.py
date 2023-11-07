@@ -2,7 +2,7 @@
 # pyuic5 -x ../../video-flip/ui.ui -o ../../video-flip/ui.py
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui import Ui_MainWindow
-import os, cv2, datetime, time, ffmpeg
+import sys, os, cv2, datetime, time, ffmpeg
 
 
 
@@ -14,6 +14,9 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def retranslateUi(self, MainWindow):
         super().retranslateUi(MainWindow)
         _translate = QtCore.QCoreApplication.translate
+        # 以main.exe開啟影片時，自動設定路徑
+        if sys.argv[-1] != "video-flip\\costom_ui2.py":
+            self.filePath.setText(sys.argv[-1])
         # 重新設定圖示路徑
         self.labelRight.setPixmap(QtGui.QPixmap("static/images/right.png"))
         self.labelLeft.setPixmap(QtGui.QPixmap("static/images/left.png"))
@@ -140,7 +143,6 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys, os
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
