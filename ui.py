@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../../video-flip/ui.ui'
+# Form implementation generated from reading ui file 'D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -67,14 +67,14 @@ class Ui_MainWindow(object):
         self.labelLeft.setSizePolicy(sizePolicy)
         self.labelLeft.setMaximumSize(QtCore.QSize(32, 32))
         self.labelLeft.setText("")
-        self.labelLeft.setPixmap(QtGui.QPixmap("../../video-flip\\static/images/left.png"))
+        self.labelLeft.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\video-flip\\static/images/left.png"))
         self.labelLeft.setScaledContents(True)
         self.labelLeft.setObjectName("labelLeft")
         self.gridLayout_2.addWidget(self.labelLeft, 1, 1, 1, 1, QtCore.Qt.AlignHCenter)
         self.labelRight = QtWidgets.QLabel(self.centralwidget)
         self.labelRight.setMaximumSize(QtCore.QSize(32, 32))
         self.labelRight.setText("")
-        self.labelRight.setPixmap(QtGui.QPixmap("../../video-flip\\static/images/right.png"))
+        self.labelRight.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\video-flip\\static/images/right.png"))
         self.labelRight.setScaledContents(True)
         self.labelRight.setObjectName("labelRight")
         self.gridLayout_2.addWidget(self.labelRight, 1, 3, 1, 1, QtCore.Qt.AlignHCenter)

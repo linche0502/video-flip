@@ -1,8 +1,9 @@
 # cd to python/Scripts
-# pyuic5 -x ../../video-flip/ui.ui -o ../../video-flip/ui.py
+# pyuic5 -x "D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.ui" -o "D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.py"
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui import Ui_MainWindow
-import os, datetime, time, ffmpeg
+from patch import run_async
+import sys, os, datetime, time, ffmpeg, mock
 
 
 
@@ -14,6 +15,9 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def retranslateUi(self, MainWindow):
         super().retranslateUi(MainWindow)
         _translate = QtCore.QCoreApplication.translate
+        # 以main.exe開啟影片時，自動設定路徑
+        if os.path.basename(__file__) not in sys.argv[-1]:
+            self.filePath.setText(sys.argv[-1])
         # 重新設定圖示路徑
         self.labelRight.setPixmap(QtGui.QPixmap("static/images/right.png"))
         self.labelLeft.setPixmap(QtGui.QPixmap("static/images/left.png"))
@@ -62,7 +66,10 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
                 transpose=1
             # 如果已經有檔案，則先刪除之間翻轉的結果
             os.remove(outputPath) if os.path.exists(outputPath) else None
-            ffmpeg.input(filePath).output(outputPath, **{'vf': f'transpose={transpose}'}).run()
+            # 打補釘，以避免run()會開啟另一個視窗
+            with mock.patch("ffmpeg.run_async", run_async):
+                ffmpeg.input(filePath).output(outputPath, vf=f'transpose={transpose}', loglevel="quiet").run()
+            
             # 轉換結束時發送訊號給trigger
             self.trigger.emit(False)
             # 停止timer
@@ -115,8 +122,6 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys, os
-    os.chdir(os.path.abspath(os.path.dirname(__file__)))
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = MyMainWindow()
