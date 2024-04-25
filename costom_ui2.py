@@ -122,10 +122,6 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD:costom_ui2.py
-=======
-    os.chdir(os.path.abspath(os.path.dirname(__file__)))
->>>>>>> defaa175f6a97090054f4205f012e97d920ac3bc:video-flip/costom_ui2.py
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = MyMainWindow()
