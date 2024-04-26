@@ -4,8 +4,8 @@
 a = Analysis(
     ['costom_ui2.py'],
     pathex=[],
-    binaries=[('.\\static\\ffmpeg\\ffmpeg.exe', '.'), ('.\\static\\ffmpeg\\ffprobe.exe', '.')],
-    datas=[('.\\static\\images\\left.png', 'data'), ('.\\static\\images\\right.png', 'data')],
+    binaries=[('static\\ffmpeg\\ffmpeg.exe', 'static\\ffmpeg'), ('static\\ffmpeg\\ffprobe.exe', 'static\\ffmpeg')],
+    datas=[('static\\images\\left.png', 'static\\images'), ('static\\images\\right.png', 'static\\images')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

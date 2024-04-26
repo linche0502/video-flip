@@ -22,12 +22,12 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         # 選擇輸入/輸出類型時, 如果不是fisheye, 就disable fisheye的fov選項
         for radioBtn in self.inputGroup.findChildren((QtWidgets.QRadioButton,)):
             radioBtn.toggled.connect(self.setFisheyeFOV_disable)
+        # 輸入路徑時, 設定預設輸出路徑與名稱
+        self.input_filePath.textChanged.connect(self.setOutputName)
         # 選擇輸出類型時, 設定預設輸出路徑與名稱
         for radioBtn in self.outputGroup.findChildren((QtWidgets.QRadioButton,)):
             radioBtn.toggled.connect(self.setFisheyeFOV_disable)
             radioBtn.toggled.connect(self.setOutputName)
-        # 輸入路徑時, 設定預設輸出路徑與名稱
-        self.input_filePath.textChanged.connect(self.setOutputName)
         # 開始按鈕按下
         self.startBtn.clicked.connect(self.run)
         # 設定影片轉換程序
@@ -78,7 +78,7 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     # 開始
     def run(self):
         # 設定ffmpeg的路徑(環境變數)
-        os.environ['PATH'] += ';'+os.path.abspath(os.path.dirname(__file__)+'/static/ffmpeg/')
+        os.environ['PATH'] += ';'+ os.path.join(os.path.dirname(__file__),"static","ffmpeg")
         try:
             filePath= self.input_filePath.text()
             # 取得影片資訊
@@ -123,13 +123,14 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
                 streams= ffmpeg.filter(splitedStream, 'vstack')
             # 設置輸出, 並合併從原始影片來的音訊與新的視訊(有時在過多操作後會丟失音訊), crf:0~29(壓縮率,0=幾乎無壓縮)
             streams= ffmpeg.output(streams, audio, self.output_filePath.text(), crf=10)
-            # 如果已經有檔案，則先刪除之間翻轉的結果
+            # 如果已經有檔案，則先刪除之間轉換的結果
             if os.path.exists(self.output_filePath.text()):
                 os.remove(self.output_filePath.text())
             # 開始轉換
             # ffmpeg.run_async(streams, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
             # 改用compile獲取cmd用的args, 再由subprocess或QProcess執行, 以實時抓取stdout
             streams= ffmpeg.compile(streams)
+            # compile之後的streams= ["ffmpeg", "其他選項指令", ...]
             self.process.start(streams[0], streams[1:])
             
         except Exception as e:

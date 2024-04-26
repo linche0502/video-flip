@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.ui'
+# Form implementation generated from reading ui file 'D:\OneDrive\Documents\workspace\python\video-flip\ui.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -37,12 +37,12 @@ class Ui_MainWindow(object):
         self.searchFile.setFont(font)
         self.searchFile.setObjectName("searchFile")
         self.gridLayout.addWidget(self.searchFile, 2, 3, 1, 1)
-        self.confirm = QtWidgets.QPushButton(self.centralwidget)
+        self.startBtn = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.confirm.setFont(font)
-        self.confirm.setObjectName("confirm")
-        self.gridLayout.addWidget(self.confirm, 8, 3, 1, 1)
+        self.startBtn.setFont(font)
+        self.startBtn.setObjectName("startBtn")
+        self.gridLayout.addWidget(self.startBtn, 8, 3, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout.addItem(spacerItem, 0, 2, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -67,14 +67,14 @@ class Ui_MainWindow(object):
         self.labelLeft.setSizePolicy(sizePolicy)
         self.labelLeft.setMaximumSize(QtCore.QSize(32, 32))
         self.labelLeft.setText("")
-        self.labelLeft.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\video-flip\\static/images/left.png"))
+        self.labelLeft.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\static/images/left.png"))
         self.labelLeft.setScaledContents(True)
         self.labelLeft.setObjectName("labelLeft")
         self.gridLayout_2.addWidget(self.labelLeft, 1, 1, 1, 1, QtCore.Qt.AlignHCenter)
         self.labelRight = QtWidgets.QLabel(self.centralwidget)
         self.labelRight.setMaximumSize(QtCore.QSize(32, 32))
         self.labelRight.setText("")
-        self.labelRight.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\video-flip\\static/images/right.png"))
+        self.labelRight.setPixmap(QtGui.QPixmap("D:\\OneDrive\\Documents\\workspace\\python\\video-flip\\static/images/right.png"))
         self.labelRight.setScaledContents(True)
         self.labelRight.setObjectName("labelRight")
         self.gridLayout_2.addWidget(self.labelRight, 1, 3, 1, 1, QtCore.Qt.AlignHCenter)
@@ -117,7 +117,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "影片翻轉"))
         self.searchFile.setText(_translate("MainWindow", "瀏覽"))
-        self.confirm.setText(_translate("MainWindow", "開始"))
+        self.startBtn.setText(_translate("MainWindow", "開始"))
         self.openFileLabel.setText(_translate("MainWindow", "開啟檔案 :"))
         self.radioLeft.setText(_translate("MainWindow", "向左90°"))
         self.radioRight.setText(_translate("MainWindow", "向右90°"))

@@ -46,7 +46,7 @@
      </widget>
     </item>
     <item row="8" column="3">
-     <widget class="QPushButton" name="confirm">
+     <widget class="QPushButton" name="startBtn">
       <property name="font">
        <font>
         <pointsize>12</pointsize>

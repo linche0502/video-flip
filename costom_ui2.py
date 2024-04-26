@@ -1,38 +1,43 @@
 # cd to python/Scripts
-# pyuic5 -x "D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.ui" -o "D:\OneDrive\Documents\workspace\python\video-flip\video-flip\ui.py"
+# pyuic5 -x "D:\OneDrive\Documents\workspace\python\video-flip\ui.ui" -o "D:\OneDrive\Documents\workspace\python\video-flip\ui.py"
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui import Ui_MainWindow
-from patch import run_async
-import sys, os, datetime, time, ffmpeg, mock
+import sys, os, datetime, time, ffmpeg
 
 
 
 
 class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
-    trigger = QtCore.pyqtSignal(bool)
-    timer= QtCore.pyqtSignal(str)
+    # 在thread或subprocess中, 要顯示訊息用的trigger
+    msgTrigger= QtCore.pyqtSignal(str, str)
+    # 在timer thread中, 要在介面上顯示輸出訊息用的trigger
+    timerTrigger= QtCore.pyqtSignal(str)
     
     def retranslateUi(self, MainWindow):
         super().retranslateUi(MainWindow)
         _translate = QtCore.QCoreApplication.translate
-        # 以main.exe開啟影片時，自動設定路徑
-        if os.path.basename(__file__) not in sys.argv[-1]:
-            self.filePath.setText(sys.argv[-1])
+        
         # 重新設定圖示路徑
-        self.labelRight.setPixmap(QtGui.QPixmap("static/images/right.png"))
-        self.labelLeft.setPixmap(QtGui.QPixmap("static/images/left.png"))
+        self.labelRight.setPixmap(QtGui.QPixmap(os.path.abspath(os.path.join(__file__, "..", "static", "images", "right.png"))))
+        self.labelLeft.setPixmap(QtGui.QPixmap(os.path.abspath(os.path.join(__file__, "..", "static", "images", "left.png"))))
         # 瀏覽按鈕按下
         self.searchFile.clicked.connect(self.onenSearchDialog)
         # 開始按鈕按下
-        self.confirm.clicked.connect(self.startFlip)
+        self.startBtn.clicked.connect(self.run)
+        # 設定影片轉換程序
+        self.process= QtCore.QProcess(self)
+        # 獲取影片轉換程序的stdout, 並開始計時器
+        self.process.started.connect(lambda: self.timerThread(True))
+        # 結束時關閉計時器
+        self.process.finished.connect(lambda: self.timerThread(False))
         # 設定thread
         self.threadpool = QtCore.QThreadPool()
-        # 設定thread跑完後，要發訊號並連接到endFlip
-        self.trigger.connect(self.flipMode)
-        # 設定timer
-        self.startTime= datetime.datetime.now()
-        self.timer.connect(self.labelTimer.setText)
-        self.running= False
+        # 在thread或subprocess中, 要顯示訊息用的trigger
+        self.msgTrigger.connect(self.showMsg)
+        # 在timer thread中, 要在介面(labelTimer)上顯示輸出訊息用的trigger
+        self.timerTrigger.connect(self.labelTimer.setText)
+        # 影片幀數
+        self.video_frames= 0
     
     # 瀏覽按鈕
     def onenSearchDialog(self):
@@ -40,83 +45,106 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.filePath.setText(fileName)
     
     # 開始按鈕
-    def startFlip(self):
+    def run(self):
         filePath= self.filePath.text()
         # 先確認檔案是否存在
         if not os.path.exists(filePath):
-            self.showMsg("檔案不存在", icon="critical")
+            self.msgTrigger.emit("檔案不存在", "critical")
             return
         
-        # ui change
-        self.trigger.emit(True)
-        
-        # video thread
-        def videoFlip():
-             # 設定輸出影片，輸出的影片名稱為xxx-flip.mp4
-            videoNames= os.path.basename(filePath)
-            newVideoNames= videoNames.split('.')[0]+ "-flip."+ videoNames.split('.')[-1]
-            outputPath= filePath.replace(videoNames,newVideoNames)
-            # 設定ffmpeg的路徑(環境變數)
-            os.environ['PATH'] += ';'+os.path.abspath(os.path.dirname(__file__)+'/static/ffmpeg/')
+        # 設定輸出影片，輸出的影片名稱為xxx-flip.mp4
+        videoNames= os.path.basename(filePath)
+        newVideoNames= ''.join(videoNames.split('.')[:-1])+ "-flip."+ videoNames.split('.')[-1]
+        outputPath= filePath.replace(videoNames,newVideoNames)
+        # 設定ffmpeg的路徑(環境變數)
+        os.environ['PATH'] += ';'+ os.path.join(os.path.dirname(__file__),"static","ffmpeg")
+        try:
+            # 取得影片資訊
+            streams= ffmpeg.probe(filePath)
+            streams = [stream for stream in streams["streams"] if stream["codec_type"] == "video"]
+            self.video_frames= int(streams[0]["nb_frames"])
+            # 讀取影片
+            streams= ffmpeg.input(filePath)
+            audio= streams.audio
+        except Exception as e:
+            self.msgTrigger.emit("影片讀取失敗", "critical")
+            return
+        try:
             # 向右:順時針(clockwise), 向左:逆時針(counter clockwise)
             if self.radioLeft.isChecked():
                 # transpose=1:順時針90度，transpose=2:逆時針90度，transpose=1,transpose=1:180度
-                transpose=2
+                streams= ffmpeg.output(streams, audio, outputPath, vf=f'transpose=2')
             elif self.radioRight.isChecked():
-                transpose=1
+                streams= ffmpeg.output(streams, audio, outputPath, vf=f'transpose=1')
             # 如果已經有檔案，則先刪除之間翻轉的結果
-            os.remove(outputPath) if os.path.exists(outputPath) else None
-            # 打補釘，以避免run()會開啟另一個視窗
-            with mock.patch("ffmpeg.run_async", run_async):
-                ffmpeg.input(filePath).output(outputPath, vf=f'transpose={transpose}', loglevel="quiet").run()
-            
-            # 轉換結束時發送訊號給trigger
-            self.trigger.emit(False)
-            # 停止timer
-            self.running= False
-        # 開始thread
-        self.threadpool.start(videoFlip)
+            if os.path.exists(outputPath):
+                os.remove(outputPath)
+            # 開始轉換
+            # ffmpeg.run_async(streams, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
+            # 改用compile獲取cmd用的args, 再由subprocess或QProcess執行, 以實時抓取stdout
+            streams= ffmpeg.compile(streams)
+            # compile之後的streams= ["ffmpeg", "其他選項指令", ...]
+            self.process.start(streams[0], streams[1:])
+        except Exception as e:
+            self.msgTrigger.emit("影片轉換時發生錯誤", "critical")
+            print(e)
         
-        # timer
-        def setTimer():
-            while self.running:
-                delta= (datetime.datetime.now()- self.startTime).seconds
-                self.timer.emit(f"開始時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
-                time.sleep(1)
-        # 重設計時器
-        self.startTime= datetime.datetime.now()
-        # 開始計時
-        self.running= True
-        self.threadpool.start(setTimer)
+    
+    # 開始/關閉計時器, 並獲取QProcess的stdout
+    def timerThread(self, status:bool):
+        self.disableWigets(status)
+        if status:
+            self.threadpool.start(self.setTimer)
+        else:
+            if self.process.exitCode() == 0:
+                # 結束訊息
+                self.msgTrigger.emit("完成", "information")
+    
+    # timer
+    def setTimer(self):
+        startTime= datetime.datetime.now()
+        progress= ""
+        while self.process.pid():
+            delta= (datetime.datetime.now()- startTime).seconds
+            # ffmpeg的輸出是放在stderr, 而不是stdout
+            stdout= bytes(self.process.readAllStandardError()).decode("utf-8").replace('\n','').replace('\r','\n').strip()
+            print(stdout, '-')
+            # 確認輸出結果為"frame= 01 fps= 30 q=18.0 size=  123KiB time=00:00:01.23 bitrate=12345.6kbits/s speed=1.234x", 而不是其他影片資訊相關的輸出結果
+            if stdout.startswith('frame='):
+                # 如果1秒內有多個輸出, 取最新的
+                # progress= stdout.split('\n')[-1]
+                progress= stdout.split("frame=")[-1].split("fps=")[0]
+                progress= f"轉換進度 :  {int(progress)*100/self.video_frames :.1f}%"
+            # 顯示結果到畫面上
+            self.timerTrigger.emit(f"{progress}\t經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
+            time.sleep(1)
+        # 結束時, 如果沒有發生錯誤, 且輸出結果不是100%, 則調為100%
+        if self.process.exitCode() == 0:
+            self.timerTrigger.emit(f"轉換進度 :  100%\t經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
     
     # 更改介面狀態
-    def flipMode(self, status:bool):
+    def disableWigets(self, status:bool):
         if status:
-            self.confirm.setText("轉換中")
+            self.startBtn.setText("轉換中..")
         else:
-            self.showMsg("完成", icon="information")
-            self.confirm.setText("開始")
-        self.confirm.setDisabled(status)
-        self.filePath.setDisabled(status)
-        self.searchFile.setDisabled(status)
-        self.radioLeft.setDisabled(status)
-        self.radioRight.setDisabled(status)
+            self.startBtn.setText("開始")
+        inputWidgets= self.centralwidget.findChildren((QtWidgets.QRadioButton, QtWidgets.QLineEdit, QtWidgets.QPushButton))
+        for inputWidget in inputWidgets:
+            inputWidget.setDisabled(status)
     
     # 訊息跳窗
-    def showMsg(self, msg:str, icon:str=""):
+    def showMsg(self, msg:str, icon:str="information"):
+        # 建立訊息視窗
         msgBox= QtWidgets.QMessageBox()
-        msgBox.setWindowTitle("訊息")
-        msgBox.setText(msg)
-        if icon:
-            if icon == "information":
-                msgBox.setIcon(QtWidgets.QMessageBox.Information)
-            elif icon == "critical":
-                msgBox.setIcon(QtWidgets.QMessageBox.Critical)
-            elif icon == "warning":
-                msgBox.setIcon(QtWidgets.QMessageBox.Warning)
-            elif icon == "question":
-                msgBox.setIcon(QtWidgets.QMessageBox.Question)
-        x= msgBox.exec_()
+        # 設定訊息類型和內容
+        if icon == "information":
+            msgBox.information(self, "訊息", msg)
+        elif icon == "critical":
+            msgBox.critical(self, "訊息", msg)
+        elif icon == "warning":
+            msgBox.warning(self, "訊息", msg)
+        elif icon == "question":
+            msgBox.question(self, "訊息", msg)
 
 
 
