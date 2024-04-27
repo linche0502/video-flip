@@ -13,8 +13,9 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     # 在timer thread中, 要在介面上顯示輸出訊息用的trigger
     timerTrigger= QtCore.pyqtSignal(str)
     
-    def retranslateUi(self, MainWindow):
-        super().retranslateUi(MainWindow)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
         _translate = QtCore.QCoreApplication.translate
         
         # 重新設定圖示路徑
@@ -53,9 +54,8 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             return
         
         # 設定輸出影片，輸出的影片名稱為xxx-flip.mp4
-        videoNames= os.path.basename(filePath)
-        newVideoNames= ''.join(videoNames.split('.')[:-1])+ "-flip."+ videoNames.split('.')[-1]
-        outputPath= filePath.replace(videoNames,newVideoNames)
+        newVideoNames= os.path.splitext(filePath)
+        outputPath= newVideoNames[0]+ "-flip"+ newVideoNames[1]
         # 設定ffmpeg的路徑(環境變數)
         os.environ['PATH'] += ';'+ os.path.join(os.path.dirname(__file__),"static","ffmpeg")
         try:
@@ -103,7 +103,7 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     # timer
     def setTimer(self):
         startTime= datetime.datetime.now()
-        progress= ""
+        progress, predict= "", ""
         while self.process.pid():
             delta= (datetime.datetime.now()- startTime).seconds
             # ffmpeg的輸出是放在stderr, 而不是stdout
@@ -114,13 +114,17 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
                 # 如果1秒內有多個輸出, 取最新的
                 # progress= stdout.split('\n')[-1]
                 progress= stdout.split("frame=")[-1].split("fps=")[0]
-                progress= f"轉換進度 :  {int(progress)*100/self.video_frames :.1f}%"
+                progress= int(progress)/self.video_frames
+                if progress > 0:
+                    predict= int(delta/progress)-delta
+                    predict= f"預估剩餘時間 :  {predict//60 : >3d}:{predict%60 :0>2d},"
+                progress= f"轉換進度 :  {progress*100 :.1f}%,"
             # 顯示結果到畫面上
-            self.timerTrigger.emit(f"{progress}\t經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
+            self.timerTrigger.emit(f"{predict}   {progress}   經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
             time.sleep(1)
         # 結束時, 如果沒有發生錯誤, 且輸出結果不是100%, 則調為100%
         if self.process.exitCode() == 0:
-            self.timerTrigger.emit(f"轉換進度 :  100%\t經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
+            self.timerTrigger.emit(f"轉換進度 :  100%,   經過時間 :  {delta//60 : >3d}:{delta%60 :0>2d}\t")
     
     # 更改介面狀態
     def disableWigets(self, status:bool):
@@ -135,7 +139,7 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     # 訊息跳窗
     def showMsg(self, msg:str, icon:str="information"):
         # 建立訊息視窗
-        msgBox= QtWidgets.QMessageBox()
+        msgBox= QtWidgets.QMessageBox(MainWindow)
         # 設定訊息類型和內容
         if icon == "information":
             msgBox.information(self, "訊息", msg)
@@ -145,14 +149,23 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             msgBox.warning(self, "訊息", msg)
         elif icon == "question":
             msgBox.question(self, "訊息", msg)
+    
+    # 關閉視窗時結束ffmpeg程序
+    def closeEvent(self, event):
+        self.threadpool.clear()
+        self.process.kill()
+        self.process.waitForFinished()
+        sys.exit()
 
 
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = MyMainWindow()
-    ui.setupUi(MainWindow)
+    # MainWindow = QtWidgets.QMainWindow()
+    # ui = MyMainWindow()
+    # ui.setupUi(MainWindow)
+    # 直接建立MyMainWindow()物件, 才能夠覆寫closeEvent
+    MainWindow = MyMainWindow()
     MainWindow.show()
     sys.exit(app.exec_())

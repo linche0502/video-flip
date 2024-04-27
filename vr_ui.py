@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\OneDrive\Documents\workspace\python\video-flip\video-flip\vr_ui.ui'
+# Form implementation generated from reading ui file 'D:\OneDrive\Documents\workspace\python\video-flip\vr_ui.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -57,9 +57,9 @@ class Ui_MainWindow(object):
         self.label_5 = QtWidgets.QLabel(self.inputGroup)
         self.label_5.setObjectName("label_5")
         self.gridLayout_3.addWidget(self.label_5, 2, 0, 1, 1)
-        self.input_flat = QtWidgets.QRadioButton(self.inputGroup)
-        self.input_flat.setObjectName("input_flat")
-        self.gridLayout_3.addWidget(self.input_flat, 5, 1, 1, 1)
+        self.input_flat_flat = QtWidgets.QRadioButton(self.inputGroup)
+        self.input_flat_flat.setObjectName("input_flat_flat")
+        self.gridLayout_3.addWidget(self.input_flat_flat, 5, 1, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -138,12 +138,13 @@ class Ui_MainWindow(object):
         self.output_lr_fisheye = QtWidgets.QRadioButton(self.outputGroup)
         self.output_lr_fisheye.setObjectName("output_lr_fisheye")
         self.gridLayout.addWidget(self.output_lr_fisheye, 2, 1, 1, 1)
-        self.output_flat = QtWidgets.QRadioButton(self.outputGroup)
-        self.output_flat.setObjectName("output_flat")
-        self.gridLayout.addWidget(self.output_flat, 3, 1, 1, 1)
+        self.output_flat_flat = QtWidgets.QRadioButton(self.outputGroup)
+        self.output_flat_flat.setObjectName("output_flat_flat")
+        self.gridLayout.addWidget(self.output_flat_flat, 3, 1, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_4 = QtWidgets.QLabel(self.outputGroup)
+        self.label_4.setEnabled(True)
         self.label_4.setMaximumSize(QtCore.QSize(100, 16777215))
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_2.addWidget(self.label_4)
@@ -179,7 +180,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "檔案位置:"))
         self.browseBtn.setText(_translate("MainWindow", "瀏覽"))
         self.label_5.setText(_translate("MainWindow", "輸入格式:"))
-        self.input_flat.setText(_translate("MainWindow", "平面(test)"))
+        self.input_flat_flat.setText(_translate("MainWindow", "平面(無左右/上下差別)(test)"))
         self.label_2.setText(_translate("MainWindow", "魚眼FOV:"))
         self.label_7.setText(_translate("MainWindow", "°"))
         self.input_ud_fisheye.setText(_translate("MainWindow", "上下 魚眼 fisheye"))
@@ -191,7 +192,7 @@ class Ui_MainWindow(object):
         self.output_ud_360.setText(_translate("MainWindow", "上下 VR360°"))
         self.output_ud_180.setText(_translate("MainWindow", "上下 VR180°"))
         self.output_lr_fisheye.setText(_translate("MainWindow", "左右 魚眼 fisheye"))
-        self.output_flat.setText(_translate("MainWindow", "平面(test)"))
+        self.output_flat_flat.setText(_translate("MainWindow", "平面(無左右/上下差別)(test)"))
         self.label_4.setText(_translate("MainWindow", "魚眼FOV:"))
         self.label_8.setText(_translate("MainWindow", "°"))
         self.output_ud_fisheye.setText(_translate("MainWindow", "上下 魚眼 fisheye"))

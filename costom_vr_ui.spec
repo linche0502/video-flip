@@ -4,7 +4,7 @@
 a = Analysis(
     ['costom_vr_ui.py'],
     pathex=[],
-    binaries=[('.\\static\\ffmpeg\\ffmpeg.exe', '.'), ('.\\static\\ffmpeg\\ffprobe.exe', '.')],
+    binaries=[('static\\ffmpeg\\ffmpeg.exe', 'static\\ffmpeg'), ('static\\ffmpeg\\ffprobe.exe', 'static\\ffmpeg')],
     datas=[],
     hiddenimports=[],
     hookspath=[],
