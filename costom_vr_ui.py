@@ -106,10 +106,14 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             elif iOptions[1] == "ud":
                 splitedStream= [ffmpeg.crop(streams, width=width, height=height//2, x=0, y=0), ffmpeg.crop(streams, width=width, height=height//2, x=0, y=height//2)]
                 height//= 2
+            # 將輸入的平面影片先拉伸成正方形, 再去做接下來的處理
+            # if iOptions[1]=="flat":
+            #     if width>height: splitedStream[0]= ffmpeg.filter(splitedStream[0], "pad", width=width, height=width, x=0, y=(width-height)//2)
+            #     if width<height: splitedStream[0]= ffmpeg.filter(splitedStream[0], "pad", width=height, height=height, x=(height-width)//2, y=0)
             # 將輸入180度的先拉伸成360度, 再去做接下來的處理, 確保視野外的部分為全黑色的背景, 避免出現邊緣的像素被拉伸的現象
             if iOptions[2]=="180" and oOptions[2] in ["360", "fisheye"]:
-                for i in range(2):
-                    splitedStream[i]= ffmpeg.filter(splitedStream[i], "pad", width=f"{width*2}", height=f"{height}", x=f"{width//2}", y='0')
+                for i in range(len(splitedStream)):
+                    splitedStream[i]= ffmpeg.filter(splitedStream[i], "pad", width=width*2, height=height, x=width//2, y=0)
                 iOptions[2]= "360"
             # 處理影像類型
             if iOptions[2:] != oOptions[2:]:
@@ -135,7 +139,6 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             # ffmpeg.run_async(streams, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
             # 改用compile獲取cmd用的args, 再由subprocess或QProcess執行, 以實時抓取stdout
             streams= ffmpeg.compile(streams)
-            print(streams)
             # compile之後的streams= ["ffmpeg", "其他選項指令", ...]
             self.process.start(streams[0], streams[1:])
             
@@ -162,7 +165,6 @@ class MyMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         # QProcess.state() : Check it again the ProcessState enum to see if its QProcess::NotRunning
         # QProcess.atEnd() : Its not running if this is true
         while self.process.state():
-            print(self.process.state())
             delta= (datetime.datetime.now()- startTime).seconds
             # ffmpeg的輸出是放在stderr, 而不是stdout
             stdout= bytes(self.process.readAllStandardError()).decode("utf-8").replace('\n','').replace('\r','\n').strip()

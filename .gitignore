@@ -1,5 +1,6 @@
 .vscode
 __pycache__
+python-3.10.10-embed-amd64
 static/ffmpeg/*.exe
 dist
 build
